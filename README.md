@@ -12,7 +12,7 @@ An sbt plugin to help you manage secrets using [credstash](https://github.com/fu
 
 * `credstashInputDir` - This directory will be recursively searched for files to process. Defaults to the resources directory (`src/main/resources`)
 * `credstashFileFilter` - Only files matching this pattern will be processed. Defaults to `*.*`
-* `credstashOutputDir` - This directory will be recursively searched for files to process. Defaults to the resources directory (`src/main/resources`)
+* `credstashOutputDir` - Processed files will be written to this directory. Defaults to `target/credstash`.
 
 ## Example usage
 
