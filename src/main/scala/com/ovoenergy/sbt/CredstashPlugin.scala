@@ -1,3 +1,4 @@
+package com.ovoenergy.sbt.credstash
 import sbt._
 import sbt.Keys._
 
