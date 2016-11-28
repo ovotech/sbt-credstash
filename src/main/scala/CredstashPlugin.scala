@@ -6,14 +6,20 @@ import scala.util.matching.Regex.Match
 object CredstashPlugin extends AutoPlugin {
   // by defining autoImport, the settings are automatically imported into user's `*.sbt`
   object autoImport {
-    val populateConfig = taskKey[Seq[File]]("Makes copies of config files with all placeholders substituted with the corresponding secret downloaded from credstash.")
+    val credstashPopulateConfig = taskKey[Seq[File]]("Makes copies of config files with all placeholders substituted with the corresponding secret downloaded from credstash.")
+    val credstashInputDir = settingKey[File]("This directory will be recursively searched for files to process.")
+    val credstashOutputDir = settingKey[File]("The processed files will be written to this directory. This should be somewhere you are not likely to accidentally check in to git, e.g. under the `target` directory.")
+    val credstashFileFilter = settingKey[String]("Only files matching this filter will be processed. e.g. `*.conf`")
 
-    // default value for the task
     lazy val baseCredstashSettings: Seq[Def.Setting[_]] = Seq(
-      populateConfig := {
-        val oldBase = (resourceDirectory in Compile).value
-        val newBase = target.value / "credstash"
-        Credstash(oldBase, newBase)
+      credstashInputDir := (resourceDirectory in Compile).value,
+      credstashFileFilter := "*.*",
+      credstashOutputDir := target.value / "credstash",
+      credstashPopulateConfig := {
+        val oldBase = credstashInputDir.value
+        val newBase = credstashOutputDir.value
+        val fileFilter = credstashFileFilter.value
+        Credstash(oldBase, newBase, fileFilter)
       }
     )
   }
@@ -40,8 +46,8 @@ object Credstash {
     }
   }
 
-  def apply(oldBase: File, newBase: File): Seq[File] = {
-    val configFiles = (oldBase ** "*.conf").get
+  def apply(oldBase: File, newBase: File, fileFilter: String): Seq[File] = {
+    val configFiles = (oldBase ** fileFilter).get
     val rebaser = rebase(oldBase, newBase)
 
     configFiles.map { file =>
