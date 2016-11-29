@@ -20,7 +20,7 @@ object CredstashPlugin extends AutoPlugin {
         val oldBase = credstashInputDir.value
         val newBase = credstashOutputDir.value
         val fileFilter = credstashFileFilter.value
-        Credstash(oldBase, newBase, fileFilter)
+        Credstash(oldBase, newBase, fileFilter, streams.value.log)
       }
     )
   }
@@ -47,17 +47,21 @@ object Credstash {
     }
   }
 
-  def apply(oldBase: File, newBase: File, fileFilter: String): Seq[File] = {
+  def apply(oldBase: File, newBase: File, fileFilter: String, log: Logger): Seq[File] = {
+    log.info(s"Processing $oldBase/**/$fileFilter using credstash ...")
     val configFiles = (oldBase ** fileFilter).get
     val rebaser = rebase(oldBase, newBase)
 
-    configFiles.map { file =>
+    val outputFiles = configFiles.map { file =>
       val fileContent = IO.read(file)
 
       val populatedConfig: String = regex.replaceAllIn(fileContent, m => downloadFromCredstash(m))
       val newFile = rebaser(file).get
       IO.write(newFile, populatedConfig)
+      log.info(s"Processed $file")
       newFile
     }
+    log.info("Finished processing using credstash")
+    outputFiles
   }
 }
