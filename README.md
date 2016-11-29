@@ -12,7 +12,8 @@ An sbt plugin to help you manage secrets using [credstash](https://github.com/fu
 
 * `credstashInputDir` - This directory will be recursively searched for files to process. Defaults to the resources directory (`src/main/resources`)
 * `credstashFileFilter` - Only files matching this pattern will be processed. Defaults to `*.*`
-* `credstashOutputDir` - Processed files will be written to this directory. Defaults to `target/credstash`.
+* `credstashOutputDir` - Processed files will be written to this directory. Defaults to `target/credstash`
+* `credstashAwsRegion` - The AWS region containing the credstash DynamoDB table. Defaults to `eu-west-1`
 
 ## Example usage
 

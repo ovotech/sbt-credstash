@@ -11,16 +11,19 @@ object CredstashPlugin extends AutoPlugin {
     val credstashInputDir = settingKey[File]("This directory will be recursively searched for files to process.")
     val credstashOutputDir = settingKey[File]("The processed files will be written to this directory. This should be somewhere you are not likely to accidentally check in to git, e.g. under the `target` directory.")
     val credstashFileFilter = settingKey[String]("Only files matching this filter will be processed. e.g. `*.conf`")
+    val credstashAwsRegion = settingKey[String]("AWS region containing the credstash DynamoDB table")
 
     lazy val baseCredstashSettings: Seq[Def.Setting[_]] = Seq(
       credstashInputDir := (resourceDirectory in Compile).value,
       credstashFileFilter := "*.*",
       credstashOutputDir := target.value / "credstash",
+      credstashAwsRegion := "eu-west-1",
       credstashPopulateConfig := {
         val oldBase = credstashInputDir.value
         val newBase = credstashOutputDir.value
         val fileFilter = credstashFileFilter.value
-        Credstash(oldBase, newBase, fileFilter, streams.value.log)
+        val region = credstashAwsRegion.value
+        Credstash(oldBase, newBase, fileFilter, region, streams.value.log)
       }
     )
   }
@@ -38,16 +41,16 @@ object Credstash {
   // Replacing config value of format @@{foo.bar}
   val regex = """@@\{([^\}]+)\}""".r
 
-  def downloadFromCredstash(keyMatcher: Match): String = {
+  def downloadFromCredstash(keyMatcher: Match, region: String): String = {
     val key = keyMatcher.group(1)
     try {
-      s"credstash get $key".!!.trim()
+      s"credstash -r $region get $key".!!.trim()
     } catch {
       case e: Throwable => throw new Exception(s"Failed to get value for $key from credstash")
     }
   }
 
-  def apply(oldBase: File, newBase: File, fileFilter: String, log: Logger): Seq[File] = {
+  def apply(oldBase: File, newBase: File, fileFilter: String, region: String, log: Logger): Seq[File] = {
     log.info(s"Processing $oldBase/**/$fileFilter using credstash ...")
     val configFiles = (oldBase ** fileFilter).get
     val rebaser = rebase(oldBase, newBase)
@@ -55,7 +58,8 @@ object Credstash {
     val outputFiles = configFiles.map { file =>
       val fileContent = IO.read(file)
 
-      val populatedConfig: String = regex.replaceAllIn(fileContent, m => downloadFromCredstash(m))
+      val populatedConfig: String = 
+        regex.replaceAllIn(fileContent, m => downloadFromCredstash(m, region))
       val newFile = rebaser(file).get
       IO.write(newFile, populatedConfig)
       log.info(s"Processed $file")
