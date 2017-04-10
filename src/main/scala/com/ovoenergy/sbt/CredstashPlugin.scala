@@ -45,6 +45,7 @@ object Credstash {
     val key = keyMatcher.group(1)
     try {
       s"credstash -r $region get $key".!!.trim()
+        .replaceAllLiterally("""\""", """\\""") // so backslashes don't get removed by `replaceAllIn`
     } catch {
       case e: Throwable => throw new Exception(s"Failed to get value for $key from credstash")
     }
