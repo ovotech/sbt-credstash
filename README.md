@@ -7,12 +7,13 @@ An sbt plugin to help you manage secrets using [credstash](https://github.com/fu
 ## Tasks
 
 * `credstashPopulateConfig` - Reads your config files and makes copies of them, with placeholders replaced by their corresponding credstash-managed secret.
+* `credstashCheckConfig` - Reads your config files and checks that all placeholders refer to valid credstash keys.
 
 ## Settings
 
 * `credstashInputDir` - This directory will be recursively searched for files to process. Defaults to the resources directory (`src/main/resources`)
 * `credstashFileFilter` - Only files matching this pattern will be processed. Defaults to `*.*`
-* `credstashOutputDir` - Processed files will be written to this directory. Defaults to `target/credstash`
+* `credstashOutputDir` - Files processed by the `credstashPopulateConfig` task will be written to this directory. Defaults to `target/credstash`
 * `credstashAwsRegion` - The AWS region containing the credstash DynamoDB table. Defaults to `eu-west-1`
 
 ## Example usage
