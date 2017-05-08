@@ -6,7 +6,7 @@ sbtPlugin := true
 
 publishMavenStyle:= false
 
-bintrayOrganization := Some("ovotech")
+bintrayOrganization := Some("ovocomms")
 
 licenses  += ("MIT", url("http://opensource.org/licenses/MIT"))
 
