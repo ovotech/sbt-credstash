@@ -1,6 +1,8 @@
 package com.ovoenergy.sbt.credstash
 import sbt._
 import sbt.Keys._
+import sbt.complete._
+import sbt.complete.DefaultParsers._
 
 import scala.util.matching.Regex.Match
 import scala.util.{Try,Success,Failure}
@@ -10,10 +12,14 @@ object CredstashPlugin extends AutoPlugin {
   object autoImport {
     val credstashPopulateConfig = taskKey[Seq[File]]("Makes copies of config files with all placeholders substituted with the corresponding secret downloaded from credstash.")
     val credstashCheckConfig = taskKey[Unit]("Checks that all placeholders in config files (in the `credstashInputDir`) refer to valid keys in credstash.")
+    val credstashLookupSecret = inputKey[Option[String]]("Lookup a secret in credstash by key")
+
     val credstashInputDir = settingKey[File]("This directory will be recursively searched for files to process.")
     val credstashOutputDir = settingKey[File]("The files processed by the `credstashPopulateConfig` task will be written to this directory. This should be somewhere you are not likely to accidentally check in to git, e.g. under the `target` directory.")
     val credstashFileFilter = settingKey[String]("Only files matching this filter will be processed. e.g. `*.conf`")
     val credstashAwsRegion = settingKey[String]("AWS region containing the credstash DynamoDB table")
+        
+    private val singleArgumentParser = (Space ~ StringBasic) map { case (spaces, word) => word }
 
     lazy val baseCredstashSettings: Seq[Def.Setting[_]] = Seq(
       credstashInputDir := (resourceDirectory in Compile).value,
@@ -32,6 +38,11 @@ object CredstashPlugin extends AutoPlugin {
         val fileFilter = credstashFileFilter.value
         val region = credstashAwsRegion.value
         Credstash.checkConfig(baseDir, fileFilter, region, streams.value.log)
+      },
+      credstashLookupSecret := {
+        val credstashKey = singleArgumentParser.parsed
+        val region = credstashAwsRegion.value
+        Credstash.lookupSecret(credstashKey, region)
       }
     )
   }
@@ -109,4 +120,9 @@ object Credstash {
 
     log.info("Finished checking credstash placeholders")
   }
+
+  def lookupSecret(key: String, region: String): Option[String] = {
+    Try(s"credstash -r $region get $key".!!.trim()).toOption
+  }
+
 }
