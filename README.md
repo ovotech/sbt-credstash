@@ -1,6 +1,6 @@
 # sbt-credstash
 
-[ ![Download](https://api.bintray.com/packages/ovocomms/sbt-plugins/sbt-credstash/images/download.svg) ](https://bintray.com/ovocomms/sbt-plugins/sbt-credstash/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/ovotech/sbt-plugins/sbt-credstash/images/download.svg) ](https://bintray.com/ovotech/sbt-plugins/sbt-credstash/_latestVersion)
 
 An sbt plugin to help you manage secrets using [credstash](https://github.com/fugue/credstash).
 
@@ -33,7 +33,7 @@ An sbt plugin to help you manage secrets using [credstash](https://github.com/fu
 
    ```
    // project/plugins.sbt
-   resolvers += Resolver.bintrayIvyRepo("ovocomms", "sbt-plugins")
+   resolvers += Resolver.bintrayIvyRepo("ovotech", "sbt-plugins")
    addSbtPlugin("com.ovoenergy" % "sbt-credstash" % "<version>")
    ```
 
