@@ -3,7 +3,7 @@ import sbt._
 import sbt.Keys._
 import sbt.complete._
 import sbt.complete.DefaultParsers._
-
+import sys.process._
 import scala.util.matching.Regex.Match
 import scala.util.{Try,Success,Failure}
 
@@ -74,7 +74,7 @@ object Credstash {
     log.info(s"Populating credstash placeholders in $oldBase/**/$fileFilter ...")
 
     val configFiles = (oldBase ** fileFilter).get
-    val rebaser = rebase(oldBase, newBase)
+    val rebaser = Path.rebase(oldBase, newBase)
 
     val outputFiles = configFiles.map { file =>
       log.info(s"Processing $file")
